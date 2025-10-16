@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: travel-backend
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/travelmanagement?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Frenchfries@2005
+    depends_on:
+      - db
+    networks:
+      - travel-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: travel-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - travel-network
+
+  db:
+    image: mysql:8.0
+    container_name: travel-db
+    environment:
+      MYSQL_DATABASE: travelmanagement
+      MYSQL_ROOT_PASSWORD: Frenchfries@2005
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - travel-network
+
+networks:
+  travel-network:
+    driver: bridge
+
+volumes:
+  mysql_data:

@@ -1,0 +1,28 @@
+# Build stage
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /app
+
+# Copy the pom.xml file
+COPY travel-backend-main/travel-backend-main/pom.xml .
+
+# Download dependencies
+RUN mvn -B dependency:go-offline
+
+# Copy source code
+COPY travel-backend-main/travel-backend-main/src ./src
+
+# Build the application
+RUN mvn -B package -DskipTests
+
+# Run stage
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+
+# Copy the JAR file from the build stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose the port the app runs on
+EXPOSE 8081
+
+# Command to run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
